@@ -15,12 +15,12 @@ spec:
     spec:
       containers:
         - name: book-service
-          image: 016257615899.dkr.ecr.us-west-2.amazonaws.com/book-service:v2
+          image: 016257615899.dkr.ecr.us-west-2.amazonaws.com/book-service:v3
           ports:
             - containerPort: 8083
           env:
             - name: SPRING_PROFILES_ACTIVE
-              value: "docker"
+              value: "prod"
             - name: DB_URL
               value: "jdbc:mysql://bookstore-postgres.cdu60wwkywed.us-west-2.rds.amazonaws.com:3306/bookstore_books_db?serverTimezone=UTC"
             - name: DB_HOST

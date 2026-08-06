@@ -21,6 +21,8 @@ spec:
           env:
             - name: SPRING_PROFILES_ACTIVE
               value: "docker"
+            - name: USER_SERVICE_URL
+              value: "http://user-service:8082"
             - name: DB_URL
               value: "jdbc:mysql://bookstore-postgres.cdu60wwkywed.us-west-2.rds.amazonaws.com:3306/bookstore_auth_db?serverTimezone=UTC"
             - name: DB_HOST
