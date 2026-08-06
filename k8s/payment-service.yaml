@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: payment-service
+  namespace: bookstore
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: payment-service
+  template:
+    metadata:
+      labels:
+        app: payment-service
+    spec:
+      containers:
+        - name: payment-service
+          image: 016257615899.dkr.ecr.us-west-2.amazonaws.com/payment-service:v2
+          ports:
+            - containerPort: 8087
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: "docker"
+            - name: DB_URL
+              value: "jdbc:mysql://bookstore-postgres.cdu60wwkywed.us-west-2.rds.amazonaws.com:3306/bookstore_payment_db?serverTimezone=UTC"
+            - name: DB_HOST
+              value: "bookstore-postgres.cdu60wwkywed.us-west-2.rds.amazonaws.com"
+            - name: SPRING_JPA_HIBERNATE_DDL_AUTO
+              value: "update"
+            - name: JWT_SECRET
+              value: "3b796f1d-02e9-4263-a411-ceb6e5532239"
+            - name: DB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: db-credentials
+                  key: DB_USERNAME
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: db-credentials
+                  key: DB_PASSWORD
+            - name: SPRING_APPLICATION_JSON
+              value: '{"services":{"book-service":{"url":"http://book-service:8083"},"user-service":{"url":"http://user-service:8082"}}}'
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+            limits:
+              memory: "1Gi"
+              cpu: "500m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: payment-service
+  namespace: bookstore
+spec:
+  selector:
+    app: payment-service
+  ports:
+    - port: 8087
+      targetPort: 8087
+  type: ClusterIP

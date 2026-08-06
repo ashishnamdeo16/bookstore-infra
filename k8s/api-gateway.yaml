@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-gateway
+  namespace: bookstore
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: api-gateway
+  template:
+    metadata:
+      labels:
+        app: api-gateway
+    spec:
+      containers:
+        - name: api-gateway
+          image: 016257615899.dkr.ecr.us-west-2.amazonaws.com/api-gateway:v2
+          ports:
+            - containerPort: 8080
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: "docker"
+            - name: AUTH_SERVICE_URI
+              value: "http://auth-service:8081"
+            - name: USER_SERVICE_URI
+              value: "http://user-service:8082"
+            - name: BOOK_SERVICE_URI
+              value: "http://book-service:8083"
+            - name: ORDER_SERVICE_URI
+              value: "http://order-service:8084"
+            - name: PAYMENT_SERVICE_URI
+              value: "http://payment-service:8087"
+            - name: ANALYTICS_SERVICE_URI
+              value: "http://analytics-service:8088"
+            - name: JWT_SECRET
+              value: "3b796f1d-02e9-4263-a411-ceb6e5532239"
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+            limits:
+              memory: "1Gi"
+              cpu: "500m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: api-gateway
+  namespace: bookstore
+spec:
+  selector:
+    app: api-gateway
+  ports:
+    - port: 80
+      targetPort: 8080
+  type: LoadBalancer
