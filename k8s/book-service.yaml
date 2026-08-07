@@ -24,7 +24,7 @@ spec:
       serviceAccountName: book-service
       containers:
         - name: book-service
-          image: 016257615899.dkr.ecr.us-west-2.amazonaws.com/book-service:dea24e9
+          image: 016257615899.dkr.ecr.us-west-2.amazonaws.com/book-service:fadf193
           ports:
             - containerPort: 8083
           env:
