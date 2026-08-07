@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: book-service
-          image: 016257615899.dkr.ecr.us-west-2.amazonaws.com/book-service:0983c2e
+          image: 016257615899.dkr.ecr.us-west-2.amazonaws.com/book-service:40da2d3
           ports:
             - containerPort: 8083
           env:
