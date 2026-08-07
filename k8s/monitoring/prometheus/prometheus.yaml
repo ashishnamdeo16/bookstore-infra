@@ -187,6 +187,7 @@ metadata:
   name: prometheus-data
   namespace: monitoring
 spec:
+  storageClassName: gp2
   accessModes:
     - ReadWriteOnce
   resources:

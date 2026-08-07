@@ -34,6 +34,7 @@ metadata:
   name: alertmanager-data
   namespace: monitoring
 spec:
+  storageClassName: gp2
   accessModes:
     - ReadWriteOnce
   resources:
