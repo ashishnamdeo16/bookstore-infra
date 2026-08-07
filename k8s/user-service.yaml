@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: user-service
-          image: 016257615899.dkr.ecr.us-west-2.amazonaws.com/user-service:v2
+          image: 016257615899.dkr.ecr.us-west-2.amazonaws.com/user-service:fadf193
           ports:
             - containerPort: 8082
           env:
