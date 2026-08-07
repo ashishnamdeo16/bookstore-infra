@@ -164,6 +164,10 @@ spec:
       labels:
         app: grafana
     spec:
+      securityContext:
+        fsGroup: 65534
+        runAsUser: 65534
+        runAsGroup: 65534
       containers:
         - name: grafana
           image: grafana/grafana:11.1.0
