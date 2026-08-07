@@ -1,0 +1,29 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: bookstore
+  namespace: argocd
+spec:
+  project: default
+
+  source:
+    repoURL: https://github.com/ashishnamdeo16/bookstore-infra.git
+    path: k8s
+    targetRevision: main
+    # Argo CD applies every plain manifest found under path: k8s.
+    # It ignores non-manifest files like generate-all.sh automatically.
+    directory:
+      recurse: false
+      exclude: "generate-all.sh"
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: bookstore
+
+  syncPolicy:
+    # Automated sync: Argo CD keeps the cluster matching Git without manual clicks.
+    automated:
+      prune: true      # delete resources removed from Git
+      selfHeal: true   # revert manual cluster changes back to Git
+    syncOptions:
+      - CreateNamespace=false   # bookstore namespace already exists
