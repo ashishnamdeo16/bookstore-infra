@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: notification-service
-          image: 016257615899.dkr.ecr.us-west-2.amazonaws.com/notification-service:v2
+          image: 016257615899.dkr.ecr.us-west-2.amazonaws.com/notification-service:fadf193
           ports:
             - containerPort: 8085
           env:
