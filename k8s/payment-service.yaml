@@ -24,9 +24,15 @@ spec:
             - name: SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE
               value: "2"
             - name: STRIPE_SECRET_KEY
-              value: ""
+              valueFrom:
+                secretKeyRef:
+                  name: stripe-credentials
+                  key: STRIPE_SECRET_KEY
             - name: STRIPE_WEBHOOK_SECRET
-              value: ""
+              valueFrom:
+                secretKeyRef:
+                  name: stripe-credentials
+                  key: STRIPE_WEBHOOK_SECRET
             - name: SPRING_PROFILES_ACTIVE
               value: "docker"
             - name: DB_URL
