@@ -15,28 +15,24 @@ spec:
     spec:
       containers:
         - name: payment-service
-          image: 016257615899.dkr.ecr.us-west-2.amazonaws.com/payment-service:v2
+          image: 016257615899.dkr.ecr.us-west-2.amazonaws.com/payment-service:40da2d3
           ports:
             - containerPort: 8087
           env:
+            - name: SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE
+              value: "5"
+            - name: SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE
+              value: "2"
             - name: STRIPE_SECRET_KEY
-              value: "sk_test_dummy_placeholder"
+              valueFrom:
+                secretKeyRef:
+                  name: stripe-credentials
+                  key: STRIPE_SECRET_KEY
             - name: STRIPE_WEBHOOK_SECRET
-              value: "whsec_dummy_placeholder"
-            - name: SPRING_DATASOURCE_URL
-              value: "jdbc:mysql://bookstore-postgres.cdu60wwkywed.us-west-2.rds.amazonaws.com:3306/bookstore_payment_db?serverTimezone=UTC"
-            - name: SPRING_DATASOURCE_USERNAME
               valueFrom:
                 secretKeyRef:
-                  name: db-credentials
-                  key: DB_USERNAME
-            - name: SPRING_DATASOURCE_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: db-credentials
-                  key: DB_PASSWORD
-            - name: SPRING_JPA_DATABASE_PLATFORM
-              value: "org.hibernate.dialect.MySQLDialect"
+                  name: stripe-credentials
+                  key: STRIPE_WEBHOOK_SECRET
             - name: SPRING_PROFILES_ACTIVE
               value: "docker"
             - name: DB_URL
