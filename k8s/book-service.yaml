@@ -1,3 +1,11 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: book-service
+  namespace: bookstore
+  annotations:
+    eks.amazonaws.com/role-arn: arn:aws:iam::016257615899:role/book-service-s3-access
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -13,6 +21,7 @@ spec:
       labels:
         app: book-service
     spec:
+      serviceAccountName: book-service
       containers:
         - name: book-service
           image: 016257615899.dkr.ecr.us-west-2.amazonaws.com/book-service:40da2d3
@@ -33,6 +42,10 @@ spec:
               value: "update"
             - name: JWT_SECRET
               value: "3b796f1d-02e9-4263-a411-ceb6e5532239"
+            - name: S3_BUCKET_NAME
+              value: "bookstore-book-images-016257615899"
+            - name: AWS_REGION
+              value: "us-west-2"
             - name: DB_USERNAME
               valueFrom:
                 secretKeyRef:
