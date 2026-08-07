@@ -1,0 +1,153 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: alertmanager-config
+  namespace: monitoring
+data:
+  alertmanager.yml: |
+    global:
+      resolve_timeout: 5m
+
+    route:
+      receiver: default-receiver
+      group_by: ["alertname", "namespace", "service"]
+      group_wait: 30s
+      group_interval: 5m
+      repeat_interval: 4h
+
+    receivers:
+      - name: default-receiver
+        webhook_configs:
+          - url: http://alertmanager-webhook.monitoring.svc.cluster.local:9094/alerts
+            send_resolved: true
+
+    inhibit_rules:
+      - source_matchers:
+          - severity="critical"
+        target_matchers:
+          - severity=~"warning|critical"
+        equal: ["alertname", "namespace", "service"]
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: alertmanager-data
+  namespace: monitoring
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: alertmanager-webhook
+  namespace: monitoring
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: alertmanager-webhook
+  template:
+    metadata:
+      labels:
+        app: alertmanager-webhook
+    spec:
+      containers:
+        - name: alertmanager-webhook
+          image: python:3.12-alpine
+          command:
+            - sh
+            - -c
+            - |
+              python - <<'PY'
+              from http.server import BaseHTTPRequestHandler, HTTPServer
+
+              class Handler(BaseHTTPRequestHandler):
+                  def do_GET(self):
+                      self.send_response(200)
+                      self.end_headers()
+                      self.wfile.write(b'ok')
+
+                  def do_POST(self):
+                      length = int(self.headers.get('content-length', 0))
+                      payload = self.rfile.read(length)
+                      print(payload.decode('utf-8', errors='replace'))
+                      self.send_response(200)
+                      self.end_headers()
+                      self.wfile.write(b'ok')
+
+                  def log_message(self, format, *args):
+                      return
+
+              HTTPServer(('0.0.0.0', 9094), Handler).serve_forever()
+              PY
+          ports:
+            - containerPort: 9094
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: alertmanager-webhook
+  namespace: monitoring
+spec:
+  selector:
+    app: alertmanager-webhook
+  ports:
+    - name: http
+      port: 9094
+      targetPort: 9094
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: alertmanager
+  namespace: monitoring
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: alertmanager
+  template:
+    metadata:
+      labels:
+        app: alertmanager
+    spec:
+      containers:
+        - name: alertmanager
+          image: prom/alertmanager:v0.28.0
+          args:
+            - --config.file=/etc/alertmanager/alertmanager.yml
+            - --storage.path=/alertmanager
+          ports:
+            - containerPort: 9093
+          volumeMounts:
+            - name: config
+              mountPath: /etc/alertmanager
+              readOnly: true
+            - name: data
+              mountPath: /alertmanager
+      volumes:
+        - name: config
+          configMap:
+            name: alertmanager-config
+        - name: data
+          persistentVolumeClaim:
+            claimName: alertmanager-data
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: alertmanager
+  namespace: monitoring
+spec:
+  selector:
+    app: alertmanager
+  ports:
+    - name: http
+      port: 9093
+      targetPort: 9093
+  type: ClusterIP

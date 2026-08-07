@@ -72,6 +72,10 @@ kind: Service
 metadata:
   name: payment-service
   namespace: bookstore
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/path: /actuator/prometheus
+    prometheus.io/port: "8087"
 spec:
   selector:
     app: payment-service

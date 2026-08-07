@@ -1,0 +1,216 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-datasources
+  namespace: monitoring
+data:
+  datasource.yaml: |
+    apiVersion: 1
+    datasources:
+      - name: Prometheus
+        type: prometheus
+        uid: prometheus
+        access: proxy
+        url: http://prometheus:9090
+        isDefault: true
+        editable: true
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboard-provider
+  namespace: monitoring
+data:
+  provider.yaml: |
+    apiVersion: 1
+    providers:
+      - name: bookstore
+        orgId: 1
+        folder: Bookstore
+        type: file
+        disableDeletion: false
+        editable: true
+        options:
+          path: /var/lib/grafana/dashboards
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboards
+  namespace: monitoring
+data:
+  application.json: |
+    {
+      "annotations": {"list": []},
+      "editable": true,
+      "fiscalYearStartMonth": 0,
+      "graphTooltip": 0,
+      "id": null,
+      "links": [],
+      "liveNow": false,
+      "panels": [
+        {"datasource":{"type":"prometheus","uid":"prometheus"},"fieldConfig":{"defaults":{"unit":"reqps"},"overrides":[]},"gridPos":{"h":8,"w":8,"x":0,"y":0},"id":1,"options":{"legend":{"calcs":[],"displayMode":"list","placement":"bottom"},"tooltip":{"mode":"single"}},"targets":[{"expr":"sum(rate(http_server_requests_seconds_count{namespace=\"bookstore\"}[5m])) by (service)","legendFormat":"{{service}}","refId":"A"}],"title":"Request Rate","type":"timeseries"},
+        {"datasource":{"type":"prometheus","uid":"prometheus"},"fieldConfig":{"defaults":{"unit":"percent"},"overrides":[]},"gridPos":{"h":8,"w":8,"x":8,"y":0},"id":2,"options":{"legend":{"displayMode":"list","placement":"bottom"},"tooltip":{"mode":"single"}},"targets":[{"expr":"100 * sum(rate(http_server_requests_seconds_count{namespace=\"bookstore\",status=~\"5..\"}[5m])) by (service) / clamp_min(sum(rate(http_server_requests_seconds_count{namespace=\"bookstore\"}[5m])) by (service), 1)","legendFormat":"{{service}}","refId":"A"}],"title":"HTTP 500 Error Rate","type":"timeseries"},
+        {"datasource":{"type":"prometheus","uid":"prometheus"},"fieldConfig":{"defaults":{"unit":"s"},"overrides":[]},"gridPos":{"h":8,"w":8,"x":16,"y":0},"id":3,"options":{"legend":{"displayMode":"list","placement":"bottom"},"tooltip":{"mode":"single"}},"targets":[{"expr":"histogram_quantile(0.95, sum by (le, service) (rate(http_server_requests_seconds_bucket{namespace=\"bookstore\"}[5m])))","legendFormat":"{{service}} p95","refId":"A"},{"expr":"histogram_quantile(0.99, sum by (le, service) (rate(http_server_requests_seconds_bucket{namespace=\"bookstore\"}[5m])))","legendFormat":"{{service}} p99","refId":"B"}],"title":"Latency P95 / P99","type":"timeseries"},
+        {"datasource":{"type":"prometheus","uid":"prometheus"},"fieldConfig":{"defaults":{"unit":"bytes"},"overrides":[]},"gridPos":{"h":8,"w":12,"x":0,"y":8},"id":4,"options":{"legend":{"displayMode":"list","placement":"bottom"},"tooltip":{"mode":"single"}},"targets":[{"expr":"sum(jvm_memory_used_bytes{namespace=\"bookstore\",area=\"heap\"}) by (service)","legendFormat":"{{service}} used","refId":"A"},{"expr":"sum(jvm_memory_max_bytes{namespace=\"bookstore\",area=\"heap\"}) by (service)","legendFormat":"{{service}} max","refId":"B"}],"title":"JVM Heap Memory","type":"timeseries"},
+        {"datasource":{"type":"prometheus","uid":"prometheus"},"fieldConfig":{"defaults":{"unit":"percentunit"},"overrides":[]},"gridPos":{"h":8,"w":6,"x":12,"y":8},"id":5,"options":{"legend":{"displayMode":"list","placement":"bottom"},"tooltip":{"mode":"single"}},"targets":[{"expr":"avg(process_cpu_usage{namespace=\"bookstore\"}) by (service)","legendFormat":"{{service}}","refId":"A"}],"title":"CPU Usage","type":"timeseries"},
+        {"datasource":{"type":"prometheus","uid":"prometheus"},"fieldConfig":{"defaults":{"unit":"short"},"overrides":[]},"gridPos":{"h":8,"w":6,"x":18,"y":8},"id":6,"options":{"legend":{"displayMode":"list","placement":"bottom"},"tooltip":{"mode":"single"}},"targets":[{"expr":"jvm_threads_live_threads{namespace=\"bookstore\"}","legendFormat":"{{service}} live","refId":"A"},{"expr":"jvm_threads_daemon_threads{namespace=\"bookstore\"}","legendFormat":"{{service}} daemon","refId":"B"}],"title":"JVM Threads","type":"timeseries"}
+      ],
+      "refresh": "30s",
+      "schemaVersion": 39,
+      "style": "dark",
+      "tags": ["bookstore", "application"],
+      "templating": {"list": []},
+      "time": {"from": "now-6h", "to": "now"},
+      "timepicker": {},
+      "timezone": "browser",
+      "title": "Bookstore Application",
+      "uid": "bookstore-application",
+      "version": 1
+    }
+  database.json: |
+    {
+      "annotations": {"list": []},
+      "editable": true,
+      "id": null,
+      "links": [],
+      "panels": [
+        {"datasource":{"type":"prometheus","uid":"prometheus"},"fieldConfig":{"defaults":{"unit":"short"},"overrides":[]},"gridPos":{"h":8,"w":8,"x":0,"y":0},"id":1,"options":{"legend":{"displayMode":"list","placement":"bottom"},"tooltip":{"mode":"single"}},"targets":[{"expr":"hikaricp_connections_active{namespace=\"bookstore\"}","legendFormat":"{{service}} active","refId":"A"},{"expr":"hikaricp_connections_idle{namespace=\"bookstore\"}","legendFormat":"{{service}} idle","refId":"B"}],"title":"HikariCP Active / Idle","type":"timeseries"},
+        {"datasource":{"type":"prometheus","uid":"prometheus"},"fieldConfig":{"defaults":{"unit":"short"},"overrides":[]},"gridPos":{"h":8,"w":8,"x":8,"y":0},"id":2,"options":{"legend":{"displayMode":"list","placement":"bottom"},"tooltip":{"mode":"single"}},"targets":[{"expr":"hikaricp_connections_pending{namespace=\"bookstore\"}","legendFormat":"{{service}} pending","refId":"A"},{"expr":"hikaricp_connections_max{namespace=\"bookstore\"}","legendFormat":"{{service}} max","refId":"B"}],"title":"HikariCP Pending / Max","type":"timeseries"}
+      ],
+      "refresh": "30s",
+      "schemaVersion": 39,
+      "style": "dark",
+      "tags": ["bookstore", "database"],
+      "templating": {"list": []},
+      "time": {"from": "now-6h", "to": "now"},
+      "timepicker": {},
+      "timezone": "browser",
+      "title": "Bookstore Database",
+      "uid": "bookstore-database",
+      "version": 1
+    }
+  kafka.json: |
+    {
+      "annotations": {"list": []},
+      "editable": true,
+      "id": null,
+      "links": [],
+      "panels": [
+        {"datasource":{"type":"prometheus","uid":"prometheus"},"fieldConfig":{"defaults":{"unit":"short"},"overrides":[]},"gridPos":{"h":8,"w":12,"x":0,"y":0},"id":1,"options":{"legend":{"displayMode":"list","placement":"bottom"},"tooltip":{"mode":"single"}},"targets":[{"expr":"max(kafka_consumer_records_lag_max{namespace=\"bookstore\"}) by (service)","legendFormat":"{{service}} lag","refId":"A"}],"title":"Kafka Consumer Lag","type":"timeseries"},
+        {"datasource":{"type":"prometheus","uid":"prometheus"},"fieldConfig":{"defaults":{"unit":"reqps"},"overrides":[]},"gridPos":{"h":8,"w":12,"x":12,"y":0},"id":2,"options":{"legend":{"displayMode":"list","placement":"bottom"},"tooltip":{"mode":"single"}},"targets":[{"expr":"sum(rate(kafka_consumer_records_consumed_total{namespace=\"bookstore\"}[5m])) by (service)","legendFormat":"{{service}} messages/s","refId":"A"}],"title":"Messages Processed","type":"timeseries"}
+      ],
+      "refresh": "30s",
+      "schemaVersion": 39,
+      "style": "dark",
+      "tags": ["bookstore", "kafka"],
+      "templating": {"list": []},
+      "time": {"from": "now-6h", "to": "now"},
+      "timepicker": {},
+      "timezone": "browser",
+      "title": "Bookstore Kafka",
+      "uid": "bookstore-kafka",
+      "version": 1
+    }
+  kubernetes.json: |
+    {
+      "annotations": {"list": []},
+      "editable": true,
+      "id": null,
+      "links": [],
+      "panels": [
+        {"datasource":{"type":"prometheus","uid":"prometheus"},"fieldConfig":{"defaults":{"unit":"cores"},"overrides":[]},"gridPos":{"h":8,"w":8,"x":0,"y":0},"id":1,"options":{"legend":{"displayMode":"list","placement":"bottom"},"tooltip":{"mode":"single"}},"targets":[{"expr":"sum(rate(container_cpu_usage_seconds_total{namespace=\"bookstore\",container!=\"\",container!=\"POD\"}[5m])) by (pod)","legendFormat":"{{pod}}","refId":"A"}],"title":"Pod CPU","type":"timeseries"},
+        {"datasource":{"type":"prometheus","uid":"prometheus"},"fieldConfig":{"defaults":{"unit":"bytes"},"overrides":[]},"gridPos":{"h":8,"w":8,"x":8,"y":0},"id":2,"options":{"legend":{"displayMode":"list","placement":"bottom"},"tooltip":{"mode":"single"}},"targets":[{"expr":"sum(container_memory_working_set_bytes{namespace=\"bookstore\",container!=\"\",container!=\"POD\"}) by (pod)","legendFormat":"{{pod}}","refId":"A"}],"title":"Pod Memory","type":"timeseries"},
+        {"datasource":{"type":"prometheus","uid":"prometheus"},"fieldConfig":{"defaults":{"unit":"short"},"overrides":[]},"gridPos":{"h":8,"w":8,"x":16,"y":0},"id":3,"options":{"legend":{"displayMode":"list","placement":"bottom"},"tooltip":{"mode":"single"}},"targets":[{"expr":"sum(increase(kube_pod_container_status_restarts_total{namespace=\"bookstore\"}[1h])) by (pod)","legendFormat":"{{pod}} restarts","refId":"A"}],"title":"Pod Restarts","type":"timeseries"}
+      ],
+      "refresh": "30s",
+      "schemaVersion": 39,
+      "style": "dark",
+      "tags": ["bookstore", "kubernetes"],
+      "templating": {"list": []},
+      "time": {"from": "now-6h", "to": "now"},
+      "timepicker": {},
+      "timezone": "browser",
+      "title": "Bookstore Kubernetes",
+      "uid": "bookstore-kubernetes",
+      "version": 1
+    }
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: grafana-data
+  namespace: monitoring
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: grafana
+  namespace: monitoring
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: grafana
+  template:
+    metadata:
+      labels:
+        app: grafana
+    spec:
+      containers:
+        - name: grafana
+          image: grafana/grafana:11.1.0
+          env:
+            - name: GF_SECURITY_ADMIN_USER
+              value: admin
+            - name: GF_SECURITY_ADMIN_PASSWORD
+              value: bookstore-grafana
+            - name: GF_PATHS_PROVISIONING
+              value: /etc/grafana/provisioning
+          ports:
+            - containerPort: 3000
+          volumeMounts:
+            - name: datasources
+              mountPath: /etc/grafana/provisioning/datasources
+              readOnly: true
+            - name: dashboards-provider
+              mountPath: /etc/grafana/provisioning/dashboards
+              readOnly: true
+            - name: dashboards
+              mountPath: /var/lib/grafana/dashboards
+              readOnly: true
+            - name: data
+              mountPath: /var/lib/grafana
+      volumes:
+        - name: datasources
+          configMap:
+            name: grafana-datasources
+        - name: dashboards-provider
+          configMap:
+            name: grafana-dashboard-provider
+        - name: dashboards
+          configMap:
+            name: grafana-dashboards
+        - name: data
+          persistentVolumeClaim:
+            claimName: grafana-data
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: grafana
+  namespace: monitoring
+spec:
+  selector:
+    app: grafana
+  ports:
+    - name: http
+      port: 80
+      targetPort: 3000
+  type: ClusterIP

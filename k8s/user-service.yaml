@@ -56,6 +56,10 @@ kind: Service
 metadata:
   name: user-service
   namespace: bookstore
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/path: /actuator/prometheus
+    prometheus.io/port: "8082"
 spec:
   selector:
     app: user-service

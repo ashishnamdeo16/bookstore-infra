@@ -60,6 +60,10 @@ kind: Service
 metadata:
   name: order-service
   namespace: bookstore
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/path: /actuator/prometheus
+    prometheus.io/port: "8084"
 spec:
   selector:
     app: order-service
