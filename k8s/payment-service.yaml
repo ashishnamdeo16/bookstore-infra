@@ -19,6 +19,10 @@ spec:
           ports:
             - containerPort: 8087
           env:
+            - name: SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE
+              value: "5"
+            - name: SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE
+              value: "2"
             - name: SPRING_PROFILES_ACTIVE
               value: "docker"
             - name: DB_URL
