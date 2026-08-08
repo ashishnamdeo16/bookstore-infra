@@ -190,10 +190,6 @@ spec:
   storageClassName: gp2
   accessModes:
     - ReadWriteOnce
-  securityContext:
-        fsGroup: 65534
-        runAsUser: 65534
-        runAsGroup: 65534  
   resources:
     requests:
       storage: 20Gi
@@ -213,6 +209,10 @@ spec:
       labels:
         app: prometheus
     spec:
+      securityContext:
+        fsGroup: 65534
+        runAsUser: 65534
+        runAsGroup: 65534
       serviceAccountName: prometheus
       containers:
         - name: prometheus
